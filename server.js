@@ -1,27 +1,22 @@
 const express = require('express');
 const app = express();
-const router = express.Router();
+const cors = require('cors');
 const PORT = process.env.PORT || 3500;
 const { logger } = require('./middleware/logEvent');
-const { con } = require('./config/connectDB');
+const login = require('./routes/login');
+const products = require('./routes/products')
 
+app.use(cors());
 
-
-con.connect(function (err) {
-    if (err) throw err;
-    console.log("Connected MySQL!!!")
-});
-
-// const sql = `INSERT INTO account value('nsangg','123456','sang@gmail.com')`
-const sql = `SELECT * FROM account`
-
-con.query(sql, (err, result) => {
-    if (err) throw err;
-    console.log(result);
-})
-
-
+// Cấu hình middleware để phân tích cú pháp JSON và URL-encoded data
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 app.use(logger);
+
+//routes
+app.use('/login', login);
+app.use('/products', products)
+
 
 app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
