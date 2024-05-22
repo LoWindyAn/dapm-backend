@@ -29,9 +29,27 @@ const postProduct = (req, res) => {
 
     const sql = 'INSERT INTO SanPham (MaSP, TenSP, MoTa, DonGia, PhiLapDat, SoLuongCon, HinhAnh, MaNCC, MaLoai) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
     con.query(sql, [MaSP, TenSP, MoTa, DonGia, PhiLapDat, SoLuongCon, HinhAnh, MaNCC, MaLoai], (err, result) => {
-        if (err) throw err;
+        if (err) return res.json(err);
         return res.json(result)
     })
 }
 
-module.exports = { getProducts, getCategories, postProduct }
+const deleteProducts = (req, res) => {
+    const { productIds } = req.body;
+    if (!productIds || !Array.isArray(productIds)) {
+        return res.status(400).send({ error: 'Invalid product IDs' });
+    }
+
+    const placeholders = productIds.map(() => '?').join(',');
+    const sql = `DELETE FROM SanPham WHERE MaSP IN (${placeholders})`;
+    con.query(sql, productIds, (err, result) => {
+        if (err) {
+            console.error('Error deleting products:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+        return res.json({ message: 'Products deleted successfully' });
+    });
+
+}
+
+module.exports = { getProducts, getCategories, postProduct, deleteProducts }
