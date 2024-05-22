@@ -13,6 +13,18 @@ const getProducts = (req, res) => {
     })
 }
 
+const getSearchProducts = (req, res) => {
+    const { type, search, maloai } = req.query
+    let sql = `SELECT * FROM sanpham WHERE ${type} LIKE '%${search}%'`
+    if (maloai) {
+        sql += `AND MaLoai LIKE '${maloai}'`
+    }
+    con.query(sql, (err, result) => {
+        if (err) throw err;
+        return res.json(result)
+    })
+}
+
 const getCategories = (req, res) => {
     const sql = 'SELECT * FROM LoaiLinhKien'
     con.query(sql, (err, result) => {
@@ -52,4 +64,4 @@ const deleteProducts = (req, res) => {
 
 }
 
-module.exports = { getProducts, getCategories, postProduct, deleteProducts }
+module.exports = { getProducts, getCategories, postProduct, deleteProducts, getSearchProducts }
