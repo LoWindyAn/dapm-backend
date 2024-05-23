@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { getManufacture } = require('../controllers/ManufactureController')
+const { getManufacture, postManufacture, updateManufacture, deleteManufactures, getSearchManufactures } = require('../controllers/ManufactureController')
 
 router.get('/', getManufacture);
-
+router.get('/search', getSearchManufactures)
+router.post('/', postManufacture)
+router.put('/', updateManufacture)
+router.delete('/', deleteManufactures)
 module.exports = router;
