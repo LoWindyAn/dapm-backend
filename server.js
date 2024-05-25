@@ -6,6 +6,7 @@ const { logger } = require('./middleware/logEvent');
 const products = require('./routes/products')
 const manufacture = require('./routes/manufacture')
 const repair = require('./routes/repair')
+const customerktk = require('./routes/customerktk')
 
 app.use(cors());
 
@@ -19,5 +20,6 @@ app.use(logger);
 app.use('/products', products)
 app.use('/manufacture', manufacture)
 app.use('/repair', repair)
+app.use('/customer', customerktk)
 
 app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
