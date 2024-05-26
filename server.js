@@ -8,6 +8,8 @@ const manufacture = require('./routes/manufacture')
 const repair = require('./routes/repair')
 const customerktk = require('./routes/customerktk')
 const billrepair = require('./routes/Bill/billrepair')
+const billinstall = require('./routes/Bill/billinstall')
+const login = require('./routes/login')
 
 app.use(cors());
 
@@ -23,5 +25,7 @@ app.use('/manufacture', manufacture)
 app.use('/repair', repair)
 app.use('/customer', customerktk)
 app.use('/bill/repair', billrepair)
+app.use('/bill/install', billinstall)
+app.use('/login', login)
 
 app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
