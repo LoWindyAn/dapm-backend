@@ -10,6 +10,7 @@ const customerktk = require('./routes/customerktk')
 const billrepair = require('./routes/Bill/billrepair')
 const billinstall = require('./routes/Bill/billinstall')
 const login = require('./routes/login')
+const report = require('./routes/report')
 
 app.use(cors());
 
@@ -27,5 +28,6 @@ app.use('/customer', customerktk)
 app.use('/bill/repair', billrepair)
 app.use('/bill/install', billinstall)
 app.use('/login', login)
+app.use('/report', report)
 
 app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
