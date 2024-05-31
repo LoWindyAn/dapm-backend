@@ -137,10 +137,25 @@ const postHoadon = (req, res) => {
 const updateHoadon = (req, res) => {
     const { MaHD, TrangThaiHD, MoTaSuaChua, TienDoHD, MaSuaChua } = req.body.hoadon
     const { dslinhkien } = req.body
+    const { user } = req.body
+
+
 
     let sql = `DELETE FROM DSLinhKien WHERE MaHD = ?`
     con.query(sql, MaHD, (err, result) => {
         if (err) console.log(err);
+    });
+
+    sql = `select * from DSNhanVienPhuTrach where MaHD like'${MaHD}' and MaNV like'${user.MaTK}'`
+    con.query(sql, (err, result) => {
+        if (err) console.log(err);
+        if (result.length < 1) {
+            sql = `insert into DSNhanVienPhuTrach (MaHD,MaNV) VALUES ('${MaHD}','${user.MaTK}')`
+            con.query(sql, (err, result) => {
+                if (err) console.log(err);
+
+            })
+        }
     });
 
     sql = `INSERT INTO DSLinhKien (MaHD, MaSP, SoLuong) VALUES ?`;

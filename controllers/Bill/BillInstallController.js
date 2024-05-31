@@ -80,34 +80,69 @@ const getDSLinhkienSuaChua = (req, res) => {
 }
 
 const postHoadon = (req, res) => {
-    const { MaHD, MaKH, ThietBiLap } = req.body
+    const { MaHD, MaKH, ThietBiLap, SDT, TenKH, DiaChi } = req.body
     if (!MaHD || !MaKH || !ThietBiLap) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
-    console.log(req.body);
 
     const currentDateGMT7 = moment().tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');  // Format to 'YYYY-MM-DD HH:MM:SS'
 
-    const sql = `INSERT INTO HoaDon (MaHD, MaKH, LoaiHoaDon, TrangThaiHD,NgayTao,TongTien,LoaiKH) VALUES (?, ?,'lap dat',0,?, 0, 1)`;
-    con.query(sql, [MaHD, MaKH, currentDateGMT7], (err, result) => {
+    let sql = `SELECT * from KhachHangKTK WHERE MaKH = '${MaKH}'`
+    con.query(sql, (err, result) => {
         if (err) console.log(err);
+        if (result.length > 0) {
+            sql = `INSERT INTO HoaDon (MaHD, MaKH, LoaiHoaDon, TrangThaiHD,NgayTao,TongTien,LoaiKH) VALUES (?, ?,'lap dat',0,?, 0, 1)`;
+            con.query(sql, [MaHD, MaKH, currentDateGMT7], (err, result) => {
+                if (err) console.log(err);
 
-        const sqlChiTietSuaChua = `INSERT INTO ChiTietLapDat (MaHD, ThietBiLap) VALUES (?, ?)`;
-        con.query(sqlChiTietSuaChua, [MaHD, ThietBiLap], (err, result) => {
-            if (err) console.log(err);
-            return res.json(result);
-        });
+                const sqlChiTietSuaChua = `INSERT INTO ChiTietLapDat (MaHD, ThietBiLap) VALUES (?, ?)`;
+                con.query(sqlChiTietSuaChua, [MaHD, ThietBiLap], (err, result) => {
+                    if (err) console.log(err);
+                    return res.json(result);
+                });
+            })
+        } else {
+            sql = `INSERT INTO KhachHangKTK (MaKH,TenKH,SDT,DiaChi) VALUES (?,?,?,?)`
+            con.query(sql, [MaKH, TenKH, SDT, DiaChi], (err, result) => {
+                if (err) console.log(err);
+                sql = `INSERT INTO HoaDon (MaHD, MaKH, LoaiHoaDon, TrangThaiHD,NgayTao,TongTien,LoaiKH) VALUES (?, ?,'lap dat',0,?, 0, 1)`;
+                con.query(sql, [MaHD, MaKH, currentDateGMT7], (err, result) => {
+                    if (err) console.log(err);
+
+                    const sqlChiTietSuaChua = `INSERT INTO ChiTietLapDat (MaHD, ThietBiLap) VALUES (?, ?)`;
+                    con.query(sqlChiTietSuaChua, [MaHD, ThietBiLap], (err, result) => {
+                        if (err) console.log(err);
+                        return res.json(result);
+                    });
+                })
+            })
+        }
     })
+
+
 }
 
 const updateHoadon = (req, res) => {
     const { MaHD, TrangThaiHD, TienDoHD } = req.body.hoadon
     const { dslinhkien } = req.body
+    const { user } = req.body
 
     let sql = `DELETE FROM DSLinhKien WHERE MaHD = ?`
     con.query(sql, MaHD, (err, result) => {
         if (err) console.log(err);
     });
+
+    sql = `select * from DSNhanVienPhuTrach where MaHD like'${MaHD}' and MaNV like'${user.MaTK}'`
+    con.query(sql, (err, result) => {
+        if (err) console.log(err);
+        if (result.length < 1) {
+            sql = `insert into DSNhanVienPhuTrach (MaHD,MaNV) VALUES ('${MaHD}','${user.MaTK}')`
+            con.query(sql, (err, result) => {
+                if (err) console.log(err);
+            })
+        }
+    });
+
 
     sql = `INSERT INTO DSLinhKien (MaHD, MaSP, SoLuong) VALUES ?`;
     const values = dslinhkien.map(item => [MaHD, item.MaSP, item.SoLuong]);
