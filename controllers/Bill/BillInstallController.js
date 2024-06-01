@@ -28,42 +28,54 @@ const getHoaDon = (req, res) => {
 FROM HoaDon
 	JOIN ChiTietSuaChua ON HoaDon.MaHD = ChiTietSuaChua.MaHD
     JOIN KhachHangKTK ON HoaDon.MaKH = KhachHangKTK.MaKH
-		WHERE HoaDon.LoaiHoaDon = 'sua chua'`
+		WHERE HoaDon.LoaiHoaDon = 'sua chua' `
     con.query(sql, (err, result) => {
         if (err) throw err;
         return res.json(result)
     })
 }
 const getSearchHoaDon = (req, res) => {
-    const { type, search } = req.query
+    const { type, search, TrangThaiHD, TienDoHD, VaiTro, MaNV } = req.query
     let sql = `SELECT 
-    HoaDon.MaHD,
-    HoaDon.MaKH,
-    HoaDon.LoaiHoaDon,
-    HoaDon.NgayTao,
-    HoaDon.TongTien,
-    HoaDon.TrangThaiHD,
-    HoaDon.LoaiKH,
-    ChiTietLapDat.ThietBiLap,
-    ChiTietLapDat.TienDoHD,
-     KhachHangKTK.TenKH,
-    KhachHangKTK.NgaySinh,
-    KhachHangKTK.GioiTinh,
-    KhachHangKTK.SDT,
-    KhachHangKTK.Email,
-    KhachHangKTK.DiaChi
-FROM HoaDon
-	JOIN ChiTietLapDat ON HoaDon.MaHD = ChiTietLapDat.MaHD
-    JOIN KhachHangKTK ON HoaDon.MaKH = KhachHangKTK.MaKH
-		WHERE HoaDon.LoaiHoaDon = 'lap dat' `
+        HoaDon.MaHD,
+        HoaDon.MaKH,
+        HoaDon.LoaiHoaDon,
+        HoaDon.NgayTao,
+        HoaDon.TongTien,
+        HoaDon.TrangThaiHD,
+        HoaDon.LoaiKH,
+        ChiTietLapDat.ThietBiLap,
+        ChiTietLapDat.TienDoHD,
+         KhachHangKTK.TenKH,
+        KhachHangKTK.NgaySinh,
+        KhachHangKTK.GioiTinh,
+        KhachHangKTK.SDT,
+        KhachHangKTK.Email,
+        KhachHangKTK.DiaChi
+    FROM HoaDon
+    	JOIN ChiTietLapDat ON HoaDon.MaHD = ChiTietLapDat.MaHD
+        JOIN KhachHangKTK ON HoaDon.MaKH = KhachHangKTK.MaKH `
+
+    if (VaiTro == 'ktv') {
+        sql += `JOIN dsnhanvienphutrach ON HoaDon.MaHD = dsnhanvienphutrach.MaHD `
+    }
+    sql += `WHERE HoaDon.LoaiHoaDon = 'lap dat' AND HoaDon.TrangThaiDuyet = 1 `
     if (type == 'SDT') {
         sql = sql + `AND KhachHangKTK.SDT LIKE '%${search}%'`
     } else if (type == 'TenKH') {
         sql = sql + `AND KhachHangKTK.TenKH LIKE '%${search}%'`
     } else if (type == 'MaHD') {
         sql = sql + `AND HoaDon.MaHD LIKE '%${search}%'`
-
     }
+
+    sql += `AND HoaDon.TrangThaiHD LIKE '%${TrangThaiHD}%' AND ChiTietLapDat.TienDoHD LIKE '%${TienDoHD}%'`
+
+
+    if (VaiTro == 'ktv') {
+        sql += `AND dsnhanvienphutrach.MaNV = '${MaNV}'`
+    }
+
+
     con.query(sql, (err, result) => {
         if (err) throw err;
         return res.json(result)
@@ -172,6 +184,11 @@ const deleteHoadon = (req, res) => {
     });
 
     sql = `DELETE FROM ChiTietLapDat  WHERE MaHD = ?`
+    con.query(sql, MaHD, (err, result) => {
+        if (err) console.log(err);
+    });
+
+    sql = `DELETE FROM DSNhanVienPhuTrach  WHERE MaHD = ?`
     con.query(sql, MaHD, (err, result) => {
         if (err) console.log(err);
     });

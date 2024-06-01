@@ -28,14 +28,14 @@ const getHoaDon = (req, res) => {
 FROM HoaDon
 	JOIN ChiTietSuaChua ON HoaDon.MaHD = ChiTietSuaChua.MaHD
     JOIN KhachHangKTK ON HoaDon.MaKH = KhachHangKTK.MaKH
-		WHERE HoaDon.LoaiHoaDon = 'sua chua' AND HoaDon.TrangThaiDuyet = 1`
+		WHERE HoaDon.LoaiHoaDon = 'sua chua' `
     con.query(sql, (err, result) => {
         if (err) throw err;
         return res.json(result)
     })
 }
 const getSearchHoaDon = (req, res) => {
-    const { type, search, TrangThaiHD, TienDoHD, VaiTro, MaNV } = req.query
+    const { type, search } = req.query
     let sql = `SELECT 
     HoaDon.MaHD,
     HoaDon.MaKH,
@@ -44,6 +44,8 @@ const getSearchHoaDon = (req, res) => {
     HoaDon.TongTien,
     HoaDon.TrangThaiHD,
     HoaDon.LoaiKH,
+    HoaDon.TrangThaiDuyet,
+    HoaDon.LyDoHuy,
     ChiTietSuaChua.MoTaSuaChua,
     ChiTietSuaChua.ThietBiSua,
     ChiTietSuaChua.TienDoHD,
@@ -57,28 +59,15 @@ const getSearchHoaDon = (req, res) => {
     KhachHangKTK.DiaChi
 FROM HoaDon
 	JOIN ChiTietSuaChua ON HoaDon.MaHD = ChiTietSuaChua.MaHD
-    JOIN KhachHangKTK ON HoaDon.MaKH = KhachHangKTK.MaKH `
-    if (VaiTro == 'ktv') {
-        sql += `JOIN dsnhanvienphutrach ON HoaDon.MaHD = dsnhanvienphutrach.MaHD `
-    }
-    sql += `WHERE HoaDon.LoaiHoaDon = 'sua chua' AND HoaDon.TrangThaiDuyet = 1 `
-
+    JOIN KhachHangKTK ON HoaDon.MaKH = KhachHangKTK.MaKH
+		WHERE HoaDon.LoaiHoaDon = 'sua chua' AND HoaDon.TrangThaiDuyet <> 1 `
     if (type == 'SDT') {
         sql = sql + `AND KhachHangKTK.SDT LIKE '%${search}%'`
     } else if (type == 'TenKH') {
         sql = sql + `AND KhachHangKTK.TenKH LIKE '%${search}%'`
     } else if (type == 'MaHD') {
         sql = sql + `AND HoaDon.MaHD LIKE '%${search}%'`
-
     }
-    sql += `AND HoaDon.TrangThaiHD LIKE '%${TrangThaiHD}%' AND ChiTietSuaChua.TienDoHD LIKE '%${TienDoHD}%'`
-
-    if (VaiTro == 'ktv') {
-        sql += `AND dsnhanvienphutrach.MaNV = '${MaNV}'`
-    }
-
-
-    // sql += `ORDER BY ChiTietSuaChua.TienDoHD ASC, HoaDon.TrangThaiHD ASC`
     con.query(sql, (err, result) => {
         if (err) throw err;
         return res.json(result)
@@ -96,9 +85,13 @@ const getDSLinhkienSuaChua = (req, res) => {
 
 const getNVPhuTrach = (req, res) => {
     const { MaHD } = req.query
-    let sql = `select MaHD,MaNV from DSNhanVienPhuTrach where MaHD like'${MaHD}'`
+    let sql = `select DSNhanVienPhuTrach.MaHD,NhanVien.HoVaTen
+    from DSNhanVienPhuTrach
+    JOIN NhanVien ON NhanVien.MaNV = DSNhanVienPhuTrach.MaNV
+    JOIN TaiKhoan ON NhanVien.MaNV = TaiKhoan.MaTK 
+    where MaHD ='${MaHD}' AND TaiKhoan.VaiTro = 'ktv'`
     con.query(sql, (err, result) => {
-        if (err) throw err;
+        if (err) console.log(err);;
         return res.json(result)
     })
 }
@@ -143,6 +136,43 @@ const postHoadon = (req, res) => {
         }
     })
 
+    return res.status(200)
+}
+
+const tiepnhan = (req, res) => {
+    const { MaHD } = req.body.hoadon
+    const { MaTK } = req.body.user
+
+    let sql = `UPDATE HOADON 
+                SET TrangThaiDuyet = 1
+                WHERE MaHD = '${MaHD}'`
+    con.query(sql, (err, result) => {
+        if (err) console.log(err);
+        sql = `INSERT INTO DSNhanVienPhuTrach (MaNV,MaHD) VALUES (?,?)`
+        con.query(sql, [MaTK, MaHD], (err, result) => {
+            if (err) console.log(err);
+            return res.json(result)
+        })
+    })
+    return res.status(200)
+}
+
+const tuchoi = (req, res) => {
+    const { MaHD, LyDoHuy } = req.body.hoadon
+    const { MaTK } = req.body.user
+
+    let sql = `UPDATE HOADON 
+                SET TrangThaiDuyet = 2,
+                LyDoHuy = '${LyDoHuy}'
+                WHERE MaHD = '${MaHD}'`
+    con.query(sql, (err, result) => {
+        if (err) console.log(err);
+        sql = `INSERT INTO DSNhanVienPhuTrach (MaNV,MaHD) VALUES (?,?)`
+        con.query(sql, [MaTK, MaHD], (err, result) => {
+            if (err) console.log(err);
+            return res.json(result)
+        })
+    })
     return res.status(200)
 }
 
@@ -215,4 +245,4 @@ const deleteHoadon = (req, res) => {
 
 
 
-module.exports = { getHoaDon, getSearchHoaDon, postHoadon, getDSLinhkienSuaChua, updateHoadon, deleteHoadon, getNVPhuTrach }
+module.exports = { getHoaDon, getSearchHoaDon, postHoadon, getDSLinhkienSuaChua, updateHoadon, deleteHoadon, getNVPhuTrach, tiepnhan, tuchoi }

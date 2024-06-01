@@ -39,7 +39,7 @@ const postManufacture = (req, res) => {
     }
     const currentDateGMT7 = moment().tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
 
-    let sql = 'INSERT INTO TaiKhoan (MaTK, TenDangNhap, MatKhau, VaiTro, TrangThaiTK, NgayTao) VALUES (?, ?, ?, ?,0,?)';
+    let sql = 'INSERT INTO TaiKhoan (MaTK, TenDangNhap, MatKhau, VaiTro, TrangThaiTK, NgayTao) VALUES (?, ?, ?, ?,1,?)';
     con.query(sql, [MaNV, TenDangNhap, MatKhau, VaiTro, currentDateGMT7], (err, result) => {
         if (err) console.log(err);
         sql = 'INSERT INTO NhanVien (MaNV, HoVaTen, Luong, SDT) VALUES (?, ?, ?,?)'
