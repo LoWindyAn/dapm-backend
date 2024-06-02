@@ -85,7 +85,7 @@ const getDSLinhkienSuaChua = (req, res) => {
 
 const getNVPhuTrach = (req, res) => {
     const { MaHD } = req.query
-    let sql = `select DSNhanVienPhuTrach.MaHD,NhanVien.HoVaTen
+    let sql = `select DSNhanVienPhuTrach.MaHD,NhanVien.HoVaTen,DSNhanVienPhuTrach.MaNV
     from DSNhanVienPhuTrach
     JOIN NhanVien ON NhanVien.MaNV = DSNhanVienPhuTrach.MaNV
     JOIN TaiKhoan ON NhanVien.MaNV = TaiKhoan.MaTK 
