@@ -54,4 +54,37 @@ const getDoanhThu1 = (req, res) => {
 
 }
 
-module.exports = { getDoanhThu, getDoanhThu1 }
+const getLinhKienDaBan = (req, res) => {
+    let sql = `SELECT 
+    lk.TenLoai,
+    YEAR(h.NgayTao) AS Nam,
+    MONTH(h.NgayTao) AS Thang,
+    SUM(d.SoLuong) AS SoLuongBanRa
+FROM 
+    DSLinhKien d
+JOIN 
+    SanPham s ON d.MaSP = s.MaSP
+JOIN 
+    LoaiLinhKien lk ON s.MaLoai = lk.MaLoai
+JOIN 
+    HoaDon h ON d.MaHD = h.MaHD
+WHERE 
+    h.TrangThaiDuyet = 1 AND 
+    h.TrangThaiHD = 1
+GROUP BY 
+    lk.TenLoai, 
+    YEAR(h.NgayTao),
+    MONTH(h.NgayTao)
+ORDER BY 
+    lk.TenLoai, 
+    Nam, 
+    Thang;`
+
+    con.query(sql, (err, result) => {
+        if (err) console.log(err);
+        res.json(result)
+    })
+
+}
+
+module.exports = { getDoanhThu, getDoanhThu1, getLinhKienDaBan }

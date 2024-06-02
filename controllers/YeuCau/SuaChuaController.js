@@ -91,7 +91,7 @@ const getNVPhuTrach = (req, res) => {
     JOIN TaiKhoan ON NhanVien.MaNV = TaiKhoan.MaTK 
     where MaHD ='${MaHD}' AND TaiKhoan.VaiTro = 'ktv'`
     con.query(sql, (err, result) => {
-        if (err) console.log(err);;
+        if (err) console.log(err);
         return res.json(result)
     })
 }
